@@ -69,36 +69,26 @@ def sliding_window(image, stepSize, windowSize):
 	# slide a window across the image
 	for y in range(0, image.shape[0], stepSize):
 		for x in range(0, image.shape[1], stepSize):
-			# yield the current window
 
 			(winWidth, winHeight) = (windowSize[0], windowSize[1])
 			(imgWidth, imgHeight) = (image.shape[1], image.shape[0])
 
 			crop = np.index_exp[y:y + winHeight, x:x + winWidth]
 
-			if imgWidth > x + winWidth and imgHeight > y + winHeight:
+			x_out_of_bounds = imgWidth < x + winWidth
+			y_out_of_bounds = imgHeight < y + winHeight
+
+			if not x_out_of_bounds and not y_out_of_bounds:
 				window =  (x, y, image[crop])
 
-			elif imgWidth < x + winWidth and imgHeight < y + winHeight: # X and Y axis out of bound
-				(x, y) =  (imgWidth - winWidth,imgHeight - winHeight)
-				crop = np.index_exp[y : imgHeight, x : imgWidth]
-				window = (x, y, image[crop])
-				yield window
-				return
-
-			elif imgWidth < x + winWidth: # X axis out of bound
-				x = imgWidth - winWidth
-				crop = np.index_exp[y:y + winHeight, x: imgWidth]
-				window = (x, y, image[crop])
-				yield window
-				break
-
-			elif imgHeight < y + winHeight: # Y axis out of bound
-				alternativeY = imgHeight - winHeight
-				crop = np.index_exp[alternativeY : imgHeight, x:x + winWidth]
-				window = (x, alternativeY, image[crop])
-				yield window
-
+			else:
+				(alternativeX, alternativeY) = (x, y)
+				if x_out_of_bounds:
+					alternativeX = imgWidth - winWidth
+				if y_out_of_bounds:
+					alternativeY = imgHeight - winHeight
+				crop = np.index_exp[alternativeY : imgHeight, alternativeX : imgWidth]
+				window = (alternativeX, alternativeY, image[crop])
 
 			yield window
 
@@ -108,7 +98,8 @@ fig, ax = plt.subplots(1)
 def show_sliding(position, image, window, i):
 	if i == 1:
 		ax.imshow(image.asnumpy())
-	rect = patches.Rectangle(position,window.shape[0] ,window.shape[1] ,linewidth=1,edgecolor='r',facecolor='none')
+
+	rect = patches.Rectangle(position,window.shape[0] ,window.shape[1] ,linewidth=1,edgecolor='w',facecolor='none')
 	ax.add_patch(rect)
 	#ax.axis('off')
 	#plt.show(block=False)
