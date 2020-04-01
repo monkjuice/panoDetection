@@ -1,0 +1,38 @@
+<annotation>
+	<folder>unlabeledDataset1.0</folder>
+	<filename>3.jpg</filename>
+	<path>E:\proyectos\unlabeledDataset1.0\3.jpg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>512</width>
+		<height>512</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>traffic sign</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>75</xmin>
+			<ymin>121</ymin>
+			<xmax>269</xmax>
+			<ymax>371</ymax>
+		</bndbox>
+	</object>
+	<object>
+		<name>street lamp</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>61</xmin>
+			<ymin>86</ymin>
+			<xmax>140</xmax>
+			<ymax>124</ymax>
+		</bndbox>
+	</object>
+</annotation>
