@@ -12,3 +12,5 @@ args:
 -v Visualize the current frame to be processed, values: True, False
 
 -n Choose youre object detection model, supported models: RCNN, YOLO, custom SSD with Pascal Voc on development
+
+-s Boolean, store results in a database - Warning: You must first set up the mysql database
