@@ -10,15 +10,13 @@ from mxnet import nd
 from mxnet import gluon
 from mxnet import autograd
 import gluoncv as gcv
-gcv.utils.check_version('0.6.0')
-from gluoncv import data as gdata
 from gluoncv import utils as gutils
 from gluoncv.model_zoo import get_model
 from gluoncv.data.batchify import Tuple, Stack, Pad
 from gluoncv.data.transforms.presets.ssd import SSDDefaultTrainTransform
 from gluoncv.data.transforms.presets.ssd import SSDDefaultValTransform
 from gluoncv.data.transforms.presets.ssd import SSDDALIPipeline
-
+from gluoncv.data import VOCDetection
 from gluoncv.utils.metrics.voc_detection import VOC07MApMetric
 from gluoncv.utils.metrics.coco_detection import COCODetectionMetric
 from gluoncv.utils.metrics.accuracy import Accuracy
@@ -38,11 +36,11 @@ except ImportError:
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train SSD networks.')
-    parser.add_argument('--network', type=str, default='vgg16_atrous',
+    parser.add_argument('--network', type=str, default='resnet50_v1',
                         help="Base network name which serves as feature extraction base.")
-    parser.add_argument('--data-shape', type=int, default=300,
+    parser.add_argument('--data-shape', type=int, default=512,
                         help="Input data shape, use 300, 512.")
-    parser.add_argument('--batch-size', type=int, default=32,
+    parser.add_argument('--batch-size', type=int, default=2,
                         help='Training mini-batch size')
     parser.add_argument('--dataset', type=str, default='voc',
                         help='Training dataset. Now support voc.')
@@ -53,7 +51,7 @@ def parse_args():
                         'number to accelerate data loading, if you CPU and GPUs are powerful.')
     parser.add_argument('--gpus', type=str, default='0',
                         help='Training with GPUs, you can specify 1,3 for example.')
-    parser.add_argument('--epochs', type=int, default=240,
+    parser.add_argument('--epochs', type=int, default=120,
                         help='Training epochs.')
     parser.add_argument('--resume', type=str, default='',
                         help='Resume from previously saved parameters if not None. '
@@ -98,12 +96,19 @@ def parse_args():
         assert hvd, "You are trying to use horovod support but it's not installed"
     return args
 
+class VOCLike(VOCDetection):
+    CLASSES = ['billboard', 'traffic light', 'electricity post', 'street lamp', 'traffic sign', 'surveillance camera']
+    def __init__(self, root, splits, transform=None, index_map=None, preload_label=True):
+        super(VOCLike, self).__init__(root, splits, transform, index_map, preload_label)
+
+
 def get_dataset(dataset, args):
     if dataset.lower() == 'voc':
-        train_dataset = gdata.VOCDetection(
-            splits=[(2007, 'trainval'), (2012, 'trainval')])
-        val_dataset = gdata.VOCDetection(
-            splits=[(2007, 'test')])
+        # typically we use 2007+2012 trainval splits for training data
+        train_dataset = VOCLike(root='VOCtemplate',splits=[(2020, 'train'), (2020, 'trainval')])
+        # and use 2007 test as validation data
+        val_dataset = VOCLike(root='VOCtemplate', splits=[(2020, 'test')])
+
         val_metric = VOC07MApMetric(iou_thresh=0.5, class_names=val_dataset.classes)
     elif dataset.lower() == 'coco':
         train_dataset = gdata.COCODetection(root=args.dataset_root + "/coco", splits='instances_train2017')

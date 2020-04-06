@@ -1,5 +1,5 @@
 from helpers import pyramid, sliding_window, show_sliding, show_window, ar_resize, store_window
-from detectors import preTrainedSSD, preTrainedRCNN, preTrainedYOLO, PascalVOCTest
+from detectors import preTrainedSSD, preTrainedRCNN, preTrainedYOLO, CustomSSD, FCNSemanticSegmentation
 import argparse
 import time
 import mxnet.image as mx
@@ -26,8 +26,8 @@ influenceHeight = 2200
 rawImage = mx.imread(args["image"])
 rawImageDimensions = (rawImage.shape[1], rawImage.shape[0])
 
-image = mx.fixed_crop(rawImage, 0, startingCropHeight, 11264, influenceHeight)
-#image = rawImage
+#image = mx.fixed_crop(rawImage, 0, startingCropHeight, 11264, influenceHeight)
+image = rawImage
 rawImage = None
 
 i = 0
@@ -35,10 +35,6 @@ i = 0
 for (x, y, window) in sliding_window(image, stepSize=512, windowSize=(winW, winH)):
 
     i = i + 1
-
-    if (visualize):
-        show_sliding((x, y), image, window, i)
-        time.sleep(1)
 
     if (store):
         store_window((x, y), scale, (winW, winH), rawImageDimensions, startingCropHeight, i)
@@ -50,5 +46,15 @@ for (x, y, window) in sliding_window(image, stepSize=512, windowSize=(winW, winH
         preTrainedYOLO(window)
 
     if network == "SSD":
-        PascalVOCTest()
+        preTrainedSSD(window, i)
+
+    if network == "CustomSSD":
+        CustomSSD(window)
+
+    if network == "semanticFCN":
+        FCNSemanticSegmentation(window, i)
+
+    if (visualize):
+        show_sliding((x, y), image, window, i)
+        time.sleep(1)
     # exit()
