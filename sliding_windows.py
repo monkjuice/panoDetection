@@ -1,5 +1,5 @@
 from helpers import pyramid, sliding_window, show_sliding, show_window, ar_resize, store_window
-from detectors import preTrainedSSD, preTrainedRCNN, preTrainedYOLO, CustomSSD, FCNSemanticSegmentation
+from detectors import preTrainedSSD, preTrainedRCNN, preTrainedYOLO, CustomSSD, DeepLavV3Segmentation
 import argparse
 import time
 import mxnet.image as mx
@@ -32,6 +32,8 @@ rawImage = None
 
 i = 0
 
+print(time.time())
+
 for (x, y, window) in sliding_window(image, stepSize=512, windowSize=(winW, winH)):
 
     i = i + 1
@@ -40,19 +42,19 @@ for (x, y, window) in sliding_window(image, stepSize=512, windowSize=(winW, winH
         store_window((x, y), scale, (winW, winH), rawImageDimensions, startingCropHeight, i)
 
     if network == "RCNN":
-        preTrainedRCNN(window)
+        preTrainedRCNN(window, i)
 
     if network == "YOLO":
-        preTrainedYOLO(window)
+        preTrainedYOLO(window, i)
 
     if network == "SSD":
         preTrainedSSD(window, i)
 
     if network == "CustomSSD":
-        CustomSSD(window)
+        CustomSSD(window, i)
 
-    if network == "semanticFCN":
-        FCNSemanticSegmentation(window, i)
+    if network == "deeplab":
+        DeepLavV3Segmentation(window, i)
 
     if (visualize):
         show_sliding((x, y), image, window, i)

@@ -36,7 +36,7 @@ except ImportError:
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train SSD networks.')
-    parser.add_argument('--network', type=str, default='resnet50_v1',
+    parser.add_argument('--network', type=str, default='resnet50_v1_custom',
                         help="Base network name which serves as feature extraction base.")
     parser.add_argument('--data-shape', type=int, default=512,
                         help="Input data shape, use 300, 512.")
@@ -382,14 +382,14 @@ if __name__ == '__main__':
         ctx = ctx if ctx else [mx.cpu()]
 
     # network
-    net_name = '_'.join(('ssd', str(args.data_shape), args.network, args.dataset))
+    net_name = args.network
     args.save_prefix += net_name
     if args.syncbn and len(ctx) > 1:
         net = get_model(net_name, pretrained_base=True, norm_layer=gluon.contrib.nn.SyncBatchNorm,
                         norm_kwargs={'num_devices': len(ctx)})
         async_net = get_model(net_name, pretrained_base=False)  # used by cpu worker
     else:
-        net = get_model(net_name, pretrained_base=True, norm_layer=gluon.nn.BatchNorm)
+        net = get_model(net_name, pretrained_base=True, norm_layer=gluon.nn.BatchNorm, classes=['billboard', 'traffic light', 'electricity post', 'street lamp', 'traffic sign', 'surveillance camera'])
         async_net = net
     if args.resume.strip():
         net.load_parameters(args.resume.strip())
